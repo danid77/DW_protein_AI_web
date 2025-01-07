@@ -1,0 +1,40 @@
+{
+    "name": "example_pdb",
+    "sequences": [
+        {
+            "protein": {
+                "id": "A",
+                "sequence": "MVLSPADKTNVKAAW"
+            }
+        },
+        {
+            "protein": {
+                "id": "B",
+                "sequence": "MVLSPADKTNVKAAW"
+            }
+        },
+        {
+            "ligand": {
+                "id": "C",
+                "smiles": "C1=CC=CC=C1"
+            }
+        },
+        {
+            "ligand": {
+                "id": "D",
+                "smiles": "C1=CC=CC=C1"
+            }
+        },
+        {
+            "ligand": {
+                "id": "E",
+                "smiles": "C1=CC=CC=C1"
+            }
+        }
+    ],
+    "modelSeeds": [
+        1
+    ],
+    "dialect": "alphafold3",
+    "version": 1
+}

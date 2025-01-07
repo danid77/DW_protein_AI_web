@@ -25,7 +25,8 @@ SECRET_KEY = "django-insecure-e25izk#^_6ws-t57#6*5#5ux%yv88gc7=_dyq9scn(0+x2kw^l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lnplicense.iptime.org', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "myapp.apps.MyappConfig", # myapp/app.py 에 정의된 클래스 - DB 테이블 생성을 위해서
 ]
 
 MIDDLEWARE = [
@@ -54,7 +56,7 @@ ROOT_URLCONF = "dw_ai_protein_web.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

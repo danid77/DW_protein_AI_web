@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entity Input UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .entity-card {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="mb-4 text-center">Entity Input Form</h2>
+        <!-- Entity Input Section -->
+        <div id="entity-container">
+            <!-- Initial Row -->
+            <div class="row entity-card">
+                <div class="col-md-4">
+                    <label class="form-label">Entity Type</label>
+                    <select class="form-select entity-type">
+                        <option selected>Protein</option>
+                        <option>Ligand</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Copies</label>
+                    <input type="number" class="form-control copies" value="1" min="1">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Paste Sequence or FASTA</label>
+                    <textarea class="form-control input-sequence" rows="3" placeholder="Paste Sequence or FASTA"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <button id="add-entity" class="btn btn-outline-primary">+ Add Entity</button>
+            <button id="run-job" class="btn btn-primary">Run</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to adjust input field based on selection
+        function adjustInputField(selectElement) {
+            const inputField = selectElement.closest(".entity-card").querySelector(".input-sequence");
+            if (selectElement.value === "Protein") {
+                const textarea = document.createElement("textarea");
+                textarea.className = "form-control input-sequence";
+                textarea.rows = 3;
+                textarea.placeholder = "Paste Sequence or FASTA";
+                inputField.replaceWith(textarea);
+            } else {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control input-sequence";
+                input.placeholder = "Input";
+                inputField.replaceWith(input);
+            }
+        }
+
+        // Add new entity row dynamically
+        document.getElementById("add-entity").addEventListener("click", () => {
+            const container = document.getElementById("entity-container");
+            const newRow = document.createElement("div");
+            newRow.className = "row entity-card";
+            newRow.innerHTML = `
+                <div class="col-md-4">
+                    <label class="form-label">Entity Type</label>
+                    <select class="form-select entity-type">
+                        <option selected>Protein</option>
+                        <option>Ligand</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Copies</label>
+                    <input type="number" class="form-control copies" value="1" min="1">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Paste Sequence or FASTA</label>
+                    <textarea class="form-control input-sequence" rows="3" placeholder="Paste Sequence or FASTA"></textarea>
+                </div>
+            `;
+            container.appendChild(newRow);
+
+            // Trigger adjustment for the newly added select
+            const newSelect = newRow.querySelector(".entity-type");
+            adjustInputField(newSelect);
+
+            // Add change event listener to the new select element
+            newSelect.addEventListener("change", () => adjustInputField(newSelect));
+        });
+
+       // Collect data and send to backend when "Run" button is clicked
+        document.getElementById("run-job").addEventListener("click", () => {
+            const data = [];
+            document.querySelectorAll(".entity-card").forEach(card => {
+                const entity = card.querySelector(".entity-type").value;
+                const content = card.querySelector(".input-sequence").value.trim();
+                const copiesField  = card.querySelector(".copies").value;
+                let copies = copiesField.trim();
+                // 기본값 설정: copies 값이 비어 있으면 1로 설정
+                if (!copies || isNaN(copies) || parseInt(copies) < 1) {
+                    copies = 1;
+                }
+                if (content) {
+                    data.push({ Entity: entity, copies : parseInt(copies), Content: content });
+                }
+            });
+
+            // Send the data to backend
+            fetch("{% url 'run_job' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json(); // JSON 응답을 파싱
+                } else {
+                    throw new Error("Failed to send run request.");
+                }
+            })
+            .then(data => {
+                if (data.status === "success") {
+                    console.log("Results:", data.results);
+                    alert(`Job completed successfully! Results:\n${data.results.join("\n")}`);
+                } else {
+                    console.error("Error in processing:", data.message);
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error sending run request.");
+            });
+        });
+
+        // Ensure "Protein" inputs are set to textarea on load
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".entity-type").forEach(select => {
+                adjustInputField(select);
+                select.addEventListener("change", () => adjustInputField(select));
+            });
+        });
+    </script>
+</body>
+</html>
